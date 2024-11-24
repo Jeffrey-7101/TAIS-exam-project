@@ -24,18 +24,18 @@ def convert_dynamodb_item(item):
 def add_product(event, context):
     """Agregar un producto."""
     body = json.loads(event['body'])
-    product = {
-        "ProductID": body["ProductID"],
-        "Name": body["Name"],
-        "Description": body["Description"],
-        "Quantity": body["Quantity"],
-        "UnitPrice": body["UnitPrice"],
-        "Category": body["Category"],
-    }
+    
     try:
         products_table.put_item(
-            Item=product,
-            ConditionExpression="attribute_not_exists(ProductID)"  # Verifica que ProductID no exista
+            product = {
+                "ProductID": body["ProductID"],
+                "Name": body["Name"],
+                "Description": body["Description"],
+                "Category": body["Category"],
+                "Quantity": 0,
+                "LastPrice": 0
+            },
+            ConditionExpression="attribute_not_exists(ProductID)"
         )
         return {
             "statusCode": 201,
