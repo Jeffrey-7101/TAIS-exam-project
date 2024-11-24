@@ -1,0 +1,162 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: unsatais
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: inventory-management
+service: inventory-management
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:Scan
+        - dynamodb:DeleteItem
+        - dynamodb:UpdateItem
+      Resource:
+        - arn:aws:dynamodb:us-east-1:*:table/Products
+        - arn:aws:dynamodb:us-east-1:*:table/InboundNotes
+        - arn:aws:dynamodb:us-east-1:*:table/OutboundNotes
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+functions:
+  # Productos
+  addProduct:
+    handler: handler.add_product
+    events:
+      - http:
+          path: products
+          method: post
+
+  getProducts:
+    handler: handler.get_products
+    events:
+      - http:
+          path: products
+          method: get
+
+  updateProduct:
+    handler: handler.update_product
+    events:
+      - http:
+          path: products/{product_id}
+          method: put
+
+  deleteProduct:
+    handler: handler.delete_product
+    events:
+      - http:
+          path: products/{product_id}
+          method: delete
+
+  # Notas de Ingreso
+  addInboundNote:
+    handler: handler.add_inbound_note
+    events:
+      - http:
+          path: inbound-notes
+          method: post
+  
+  getAllInboundNotes:
+    handler: handler.get_all_inbound_notes
+    events:
+      - http:
+          path: inbound-notes
+          method: get
+
+  getInboundNoteData:
+    handler: handler.get_inbound_note_data
+    events:
+      - http:
+          path: inbound-notes/{note_id}
+          method: get
+
+  getInboundNoteXLSX:
+    handler: handler.get_inbound_note_xlsx
+    events:
+      - http:
+          path: inbound-notes/{note_id}/xlsx
+          method: get
+
+  deleteInboundNote:
+    handler: handler.delete_inbound_note
+    events:
+      - http:
+          path: inbound-notes/{note_id}
+          method: delete
+
+  # Notas de Salida
+  addOutboundNote:
+    handler: handler.add_outbound_note
+    events:
+      - http:
+          path: outbound-notes
+          method: post
+
+  getAllOutboundNotes:
+    handler: handler.get_all_outbound_notes
+    events:
+      - http:
+          path: outbound-notes
+          method: get
+
+  getOutboundNote:
+    handler: handler.get_outbound_note
+    events:
+      - http:
+          path: outbound-notes/{note_id}
+          method: get
+
+  deleteOutboundNote:
+    handler: handler.delete_outbound_note
+    events:
+      - http:
+          path: outbound-notes/{note_id}
+          method: delete
+
+resources:
+  Resources:
+    ProductsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Products
+        AttributeDefinitions:
+          - AttributeName: ProductID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ProductID
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    InboundNotesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: InboundNotes
+        AttributeDefinitions:
+          - AttributeName: NoteID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: NoteID
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    OutboundNotesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: OutboundNotes
+        AttributeDefinitions:
+          - AttributeName: NoteID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: NoteID
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
